@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Текст с LaTeX, кодом и таблицами</title>
+    
+    <!-- Подключение MathJax для рендеринга LaTeX -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+    <!-- Подключение Highlight.js для подсветки синтаксиса -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/styles/default.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/highlight.min.js"></script>
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        textarea {
+            width: 100%;
+            height: 150px;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+        .output {
+            margin-top: 20px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            background-color: #f9f9f9;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Введите текст с LaTeX, кодом и таблицами</h1>
+    <textarea id="input-text" placeholder="Введите ваш текст здесь..."></textarea>
+    <button onclick="renderText()">Преобразовать текст</button>
+
+    <div class="output" id="output"></div>
+
+    <script>
+        // Функция для рендеринга текста с LaTeX, кодом и таблицами
+        function renderText() {
+            const inputText = document.getElementById("input-text").value;
+            const outputDiv = document.getElementById("output");
+
+            // Преобразование символов новой строки в HTML-теги
+            const formattedText = inputText
+                .replace(/```([^`]+)```/g, '<pre><code>$1</code></pre>') // Обработка кода в тройных кавычках
+                .replace(/\$\$(.+?)\$\$/g, '\\[$1\\]')                  // Обработка формул с $$...$$
+                .replace(/\$(.+?)\$/g, '\\($1\\)')                      // Обработка формул с $...$
+                .replace(/\|(.+?)\|/g, '<td>$1</td>')                   // Преобразование таблиц
+                .replace(/\n/g, '<br>');
+
+            outputDiv.innerHTML = formattedText;
+
+            // Подсветка синтаксиса кода
+            document.querySelectorAll('pre code').forEach((el) => {
+                hljs.highlightElement(el);
+            });
+
+            // Рендеринг формул LaTeX
+            MathJax.typesetPromise();
+        }
+    </script>
+
+</body>
+</html>
