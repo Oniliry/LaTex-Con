@@ -4,11 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Декодирование текста из URL</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.15.2/katex.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/styles/default.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.15.2/katex.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.15.2/contrib/auto-render.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/1.0.11/pako.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/highlight.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/styles/default.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.15.1/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.15.1/contrib/auto-render.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.15.1/katex.min.css">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -18,19 +19,6 @@
             background: #f4f4f4;
             padding: 10px;
             border-radius: 5px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 10px 0;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-        th {
-            background-color: #f2f2f2;
         }
     </style>
 </head>
@@ -47,19 +35,19 @@
             return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
         }
 
-        // Функция для декодирования URL
-        function decodeUrl(encodedText) {
+        // Функция для разжатия текста
+        function decompressText(encodedText) {
             try {
-                return decodeURIComponent(encodedText);
+                // Декодируем Base64 в Uint8Array
+                const compressedData = Uint8Array.from(atob(encodedText), c => c.charCodeAt(0));
+                
+                // Разжимаем данные
+                return pako.inflate(compressedData, { to: 'string' });
             } catch (e) {
-                console.error('Ошибка декодирования URL:', e);
-                return 'Ошибка декодирования URL.';
+                console.error('Ошибка разжатия:', e);
+                return 'Ошибка разжатия текста.';
             }
         }
-
-        // Получение текста из параметра URL и декодирование
-        const encodedText = getUrlParameter('text');
-        const decodedText = decodeUrl(encodedText);
 
         // Простой метод для преобразования Markdown в HTML
         function convertMarkdownToHtml(markdownText) {
@@ -90,10 +78,15 @@
                 .replace(/\n/g, '<br>'); // Перевод строки
         }
 
-        // Обработка и вывод текста
-        if (decodedText) {
-            const formattedText = convertMarkdownToHtml(decodedText);
-            document.getElementById("content").innerHTML = formattedText;
+        // Получение текста из параметра URL и декодирование
+        const encodedText = getUrlParameter('text');
+        let output;
+
+        if (encodedText) {
+            // Декодируем и разжимаем текст
+            const decodedText = decompressText(encodedText);
+            // Преобразуем Markdown в HTML
+            output = convertMarkdownToHtml(decodedText);
 
             // Рендеринг формул с помощью KaTeX
             renderMathInElement(document.getElementById("content"), {
@@ -108,8 +101,11 @@
                 hljs.highlightBlock(block);
             });
         } else {
-            document.getElementById("content").innerHTML = "Нет текста для отображения.";
+            output = "Нет текста для отображения.";
         }
+
+        // Вывод результата
+        document.getElementById("content").innerHTML = output;
     </script>
 </body>
 </html>
