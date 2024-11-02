@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LaTeX Converter</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.23.0/themes/prism.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-okaidia.min.css" />
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -15,7 +16,7 @@
             margin: 0;
         }
         .container {
-            width: 60%;
+            width: 100%;
             max-width: 700px;
             text-align: center;
         }
@@ -36,25 +37,38 @@
             border: 1px solid #ddd;
             text-align: left;
             overflow-x: auto;
+            position: relative; /* Для позиционирования */
+            z-index: 1; /* Поднимаем z-index */
+        }
+        .white-frame {
+            background-color: white; /* Белый фон */
+            border: 2px solid #ddd; /* Рамка вокруг */
+            padding: 10px;
+            position: absolute; /* Позиционирование */
+            top: 0; /* Сдвигаем к верху */
+            left: 0; /* Сдвигаем влево */
+            right: 0; /* Сдвигаем вправо */
+            bottom: 0; /* Сдвигаем вниз */
+            z-index: -1; /* Уводим рамку назад */
+            border-radius: 5px; /* Закругляем углы */
         }
         pre {
             background: #f5f5f5;
             padding: 10px;
             border-radius: 5px;
-            overflow: auto; /* Обеспечивает прокрутку для длинного кода */
+            overflow: auto;
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.0.4/pako.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.23.0/prism.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-okaidia.min.css" />
 </head>
 <body>
     <div class="container">
         <h1>Конвертер LaTeX</h1>
         <textarea id="latexInput" placeholder="Введите текст с формулами LaTeX и Markdown" rows="10"></textarea>
         <button onclick="convertLatex()">Конвертировать</button>
-
+        <button onclick="sendResult()">Отправить результат</button>
         <div class="output">
             <h2>Результат:</h2>
             <div id="outputText"></div>
@@ -97,24 +111,24 @@
 
             // Замена разметки Markdown на HTML
             htmlText = htmlText
-                // Заменяем переводы строк в тексте на <br>, кроме блоков кода
                 .replace(/(?<!{{codeBlock\d+}})\n(?!{{codeBlock\d+}})/g, '<br>')
-                // Восстанавливаем блоки кода
                 .replace(/{{codeBlock(\d+)}}/g, (match, index) => {
                     return `<pre><code class="language-js">${codeBlocks[index].replace('<br>', /\n/g)}</code></pre>`;
                 })
-                .replace(/## (.*?)(?=\n|$)/g, '<h2>$1</h2>') // Заголовки 2 уровня
-                .replace(/# (.*?)(?=\n|$)/g, '<h1>$1</h1>') // Заголовки 1 уровня
                 .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Жирный текст
                 .replace(/\*(.*?)\*/g, '<em>$1</em>'); // Курсивный текст
 
             // Оборачиваем все <li> в <ul>
             htmlText = htmlText.replace(/(<li>.*?<\/li>)/g, '<ul>$1</ul>');
-            console.log(htmlText);
-
             outputDiv.innerHTML = htmlText; // Вставка преобразованного HTML
             Prism.highlightAll(); // Подсветка синтаксиса с помощью Prism.js
             MathJax.typesetPromise([outputDiv]); // Обновление MathJax для формул
+        }
+
+        // Функция для отправки результата обратно в Telegram
+        function sendResult() {
+            const resultText = document.getElementById("outputText").innerHTML;
+            window.Telegram.WebApp.sendData(resultText); // Отправка результата в Telegram
         }
 
         // Автозагрузка и декодирование текста из URL-параметра при загрузке страницы
@@ -125,6 +139,8 @@
                 document.getElementById("latexInput").value = decodedText;
                 convertLatex(); // Конвертируем текст сразу
             }
+            window.Telegram.WebApp.ready();
+            document.getElementById('latexInput').style.height = window.Telegram.WebApp.getViewportHeight() + 'px';
         };
     </script>
 </body>
