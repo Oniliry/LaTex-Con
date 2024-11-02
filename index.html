@@ -30,15 +30,16 @@
             overflow-x: auto;
             flex-grow: 1;
         }
-        pre code {
+        pre, code {
             font-size: 10px !important;
-            line-height: 1.2;
+            line-height: 1.0;
         }
         pre {
             background: #f5f5f5;
             padding: 10px;
             border-radius: 5px;
             overflow: auto;
+            line-height: 1.0;
         }
         table {
             width: 100%;
@@ -52,7 +53,7 @@
             border: 1px solid #ddd;
             text-align: center;
             vertical-align: middle;
-            font-weight: normal;      /* Обычное начертание текста */
+            font-weight: normal;
         }
         .button-close {
             display: inline-block;
@@ -76,11 +77,23 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.23.0/prism.min.js"></script>
 </head>
 <body>
+    <script src="https://telegram.org/js/telegram-web-app.js "></script>
+
+    <script>
+        let tg = window.Telegram.WebApp;
+    
+        tg.ready();
+    
+        function closeMiniApp() {
+            tg.close();
+        }
+    </script>
+    
     <div class="output" id="outputText">
         <!-- Результат обработки будет отображаться здесь -->
     </div>
-
-    <a href="javascript:void(0);" onclick="window.close();" class="button-close">Закрыть</a>
+    
+    <a href="javascript:void(0);" onclick="closeMiniApp();" class="button-close">Закрыть</a>
 
     <script>
         function decompressText(encodedText) {
@@ -111,6 +124,12 @@
                 return `{{codeBlock${index}}}`;
             });
 
+            // Обрабатываем заголовки ## и ###
+            htmlText = htmlText.replace(/^(#{2,3})\s*(.*?)\n/gm, (match, hashes, title) => {
+                const level = hashes.length; // уровень заголовка
+                return `<h${level}>${title.trim()}</h${level}>`;
+            });
+
             // Обрабатываем таблицы Markdown
             htmlText = htmlText.replace(/(\|.*?\|)\n\|[-| ]+\|\n((\|.*?\|\n)+)/g, (match, header, body) => {
                 const headers = header.trim().split("|").filter(cell => cell.trim()).map(cell => `<th>${cell.trim()}</th>`).join("");
@@ -127,6 +146,7 @@
                     return `<pre><code class="language-js">${codeBlocks[index].replace('<br>', /\n/g)}</code></pre>`;
                 })
                 .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/`(.*?)`/g, '<em>$1</em>')
                 .replace(/\*(.*?)\*/g, '<em>$1</em>');
 
             htmlText = htmlText.replace(/(<li>.*?<\/li>)/g, '<ul>$1</ul>');
