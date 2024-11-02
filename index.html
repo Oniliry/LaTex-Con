@@ -47,21 +47,19 @@
             return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
         }
 
-        // Функция для декодирования Base64
-        function decodeBase64(encodedText) {
+        // Функция для декодирования URL
+        function decodeUrl(encodedText) {
             try {
-                // Декодирование Base64
-                const decodedText = atob(encodedText);
-                // Преобразуем в текст в UTF-8
-                return decodeURIComponent(escape(decodedText));
+                return decodeURIComponent(encodedText);
             } catch (e) {
-                console.error('Ошибка декодирования:', e);
-                return 'Ошибка декодирования Base64.';
+                console.error('Ошибка декодирования URL:', e);
+                return 'Ошибка декодирования URL.';
             }
         }
 
         // Получение текста из параметра URL и декодирование
         const encodedText = getUrlParameter('text');
+        const decodedText = decodeUrl(encodedText);
 
         // Простой метод для преобразования Markdown в HTML
         function convertMarkdownToHtml(markdownText) {
@@ -93,8 +91,7 @@
         }
 
         // Обработка и вывод текста
-        if (encodedText) {
-            const decodedText = decodeBase64(encodedText);
+        if (decodedText) {
             const formattedText = convertMarkdownToHtml(decodedText);
             document.getElementById("content").innerHTML = formattedText;
 
