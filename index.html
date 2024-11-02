@@ -1,41 +1,78 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Декодирование текста из URL</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/1.0.11/pako.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/highlight.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/styles/default.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.15.1/katex.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.15.1/contrib/auto-render.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.15.1/katex.min.css">
+    <title>LaTeX Converter</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.23.0/themes/prism.min.css" rel="stylesheet" />
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
         }
-        pre, code {
-            background: #f4f4f4;
+        .container {
+            width: 60%;
+            max-width: 700px;
+            text-align: center;
+        }
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .output {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+            overflow-x: auto;
+        }
+        pre {
+            background: #f5f5f5;
             padding: 10px;
             border-radius: 5px;
-        }
-        table {
-            border-collapse: collapse;
-            width: 100%;
-            margin: 10px 0;
-        }
-        td {
-            border: 1px solid #ddd;
-            padding: 8px;
+            overflow: auto; /* Обеспечивает прокрутку для длинного кода */
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.0.4/pako.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.23.0/prism.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-okaidia.min.css" />
 </head>
 <body>
-    <h1>Декодирование текста</h1>
-    <div id="content"></div>
+    <div class="container">
+        <h1>Конвертер LaTeX</h1>
+        <textarea id="latexInput" placeholder="Введите текст с формулами LaTeX и Markdown" rows="10"></textarea>
+        <button onclick="convertLatex()">Конвертировать</button>
+
+        <div class="output">
+            <h2>Результат:</h2>
+            <div id="outputText"></div>
+        </div>
+    </div>
 
     <script>
+        // Функция для разжатия текста
+        function decompressText(encodedText) {
+            try {
+                const compressedData = Uint8Array.from(atob(encodedText), c => c.charCodeAt(0));
+                return pako.inflate(compressedData, { to: 'string' });
+            } catch (e) {
+                console.error('Ошибка разжатия:', e);
+                return 'Ошибка разжатия текста.';
+            }
+        }
+
         // Функция для получения параметров URL
         function getUrlParameter(name) {
             name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
@@ -44,79 +81,51 @@
             return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
         }
 
-        // Функция для разжатия текста
-        function decompressText(encodedText) {
-            try {
-                // Декодируем Base64 в Uint8Array
-                const compressedData = Uint8Array.from(atob(encodedText), c => c.charCodeAt(0));
-                
-                // Разжимаем данные
-                return pako.inflate(compressedData, { to: 'string' });
-            } catch (e) {
-                console.error('Ошибка разжатия:', e);
-                return 'Ошибка разжатия текста.';
+        // Функция для конвертации LaTeX текста и подсветки Markdown
+        function convertLatex() {
+            const latexText = document.getElementById("latexInput").value;
+            const outputDiv = document.getElementById("outputText");
+            let htmlText = latexText;
+
+            // Сохраняем блоки кода и заменяем их на временные метки
+            const codeBlocks = [];
+            htmlText = htmlText.replace(/```([\s\S]*?)```/g, (match, code) => {
+                const index = codeBlocks.length;
+                codeBlocks.push(code); // Сохраняем код
+                return `{{codeBlock${index}}}`; // Возвращаем временную метку
+            });
+
+            // Замена разметки Markdown на HTML
+            htmlText = htmlText
+                // Заменяем переводы строк в тексте на <br>, кроме блоков кода
+                .replace(/(?<!{{codeBlock\d+}})\n(?!{{codeBlock\d+}})/g, '<br>')
+                // Восстанавливаем блоки кода
+                .replace(/{{codeBlock(\d+)}}/g, (match, index) => {
+                    return `<pre><code class="language-js">${codeBlocks[index].replace('<br>', /\n/g)}</code></pre>`;
+                })
+                .replace(/## (.*?)(?=\n|$)/g, '<h2>$1</h2>') // Заголовки 2 уровня
+                .replace(/# (.*?)(?=\n|$)/g, '<h1>$1</h1>') // Заголовки 1 уровня
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Жирный текст
+                .replace(/\*(.*?)\*/g, '<em>$1</em>'); // Курсивный текст
+
+            // Оборачиваем все <li> в <ul>
+            htmlText = htmlText.replace(/(<li>.*?<\/li>)/g, '<ul>$1</ul>');
+            console.log(htmlText);
+
+            outputDiv.innerHTML = htmlText; // Вставка преобразованного HTML
+            Prism.highlightAll(); // Подсветка синтаксиса с помощью Prism.js
+            MathJax.typesetPromise([outputDiv]); // Обновление MathJax для формул
+        }
+
+        // Автозагрузка и декодирование текста из URL-параметра при загрузке страницы
+        window.onload = function() {
+            const encodedText = getUrlParameter('text');
+            if (encodedText) {
+                const decodedText = decompressText(encodedText);
+                document.getElementById("latexInput").value = decodedText;
+                convertLatex(); // Конвертируем текст сразу
             }
-        }
-
-        // Простой метод для преобразования Markdown в HTML
-        function convertMarkdownToHtml(markdownText) {
-            // Подсветка кода
-            const codeRe = /```([a-z]*)\n([\s\S]*?)```/g;
-            markdownText = markdownText.replace(codeRe, (match, lang, code) => {
-                const highlightedCode = hljs.highlightAuto(code, [lang]).value;
-                return `<pre><code class="hljs ${lang}">${highlightedCode}</code></pre>`;
-            });
-
-            // Обработка таблиц
-            markdownText = markdownText.replace(/\|(.+?)\|/g, (match, row) => {
-                const cells = row.split('|').map(cell => `<td>${cell.trim()}</td>`).join('');
-                return `<tr>${cells}</tr>`;
-            });
-
-            // Упаковка таблиц
-            markdownText = markdownText.replace(/<tr>(.*?)<\/tr>/g, (match, row) => {
-                return `<table><tbody>${match}</tbody></table>`;
-            });
-
-            // Прочие преобразования
-            return markdownText
-                .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-                .replace(/\*(.+?)\*/g, '<em>$1</em>')
-                .replace(/__(.+?)__/g, '<strong>$1</strong>')
-                .replace(/_(.+?)_/g, '<em>$1</em>')
-                .replace(/\n/g, '<br>'); // Перевод строки
-        }
-
-        // Получение текста из параметра URL и декодирование
-        const encodedText = getUrlParameter('text');
-        let output;
-
-        if (encodedText) {
-            // Декодируем и разжимаем текст
-            const decodedText = decompressText(encodedText);
-            // Преобразуем Markdown в HTML
-            output = convertMarkdownToHtml(decodedText);
-            document.getElementById("content").innerHTML = output;
-
-            // Рендеринг формул с помощью KaTeX
-            renderMathInElement(document.getElementById("content"), {
-                delimiters: [
-                    { left: "\\(", right: "\\)", display: false },
-                    { left: "\\[", right: "\\]", display: true }
-                ],
-                throwOnError: false // Не выбрасывать ошибку, если не удаётся обработать формулу
-            });
-
-            // Запуск подсветки кода
-            document.querySelectorAll('pre code').forEach((block) => {
-                hljs.highlightBlock(block);
-            });
-        } else {
-            output = "Нет текста для отображения.";
-        }
-
-        // Вывод результата
-        document.getElementById("content").innerHTML = output;
+        };
     </script>
 </body>
 </html>
