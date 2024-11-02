@@ -47,7 +47,7 @@
             return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
         }
 
-        // Получение текста из параметра URL
+        // Получение текста из параметра URL и декодирование
         const text = getUrlParameter('text');
 
         // Простой метод для преобразования Markdown в HTML
