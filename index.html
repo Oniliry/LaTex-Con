@@ -20,6 +20,15 @@
             padding: 10px;
             border-radius: 5px;
         }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 10px 0;
+        }
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
     </style>
 </head>
 <body>
@@ -87,13 +96,15 @@
             const decodedText = decompressText(encodedText);
             // Преобразуем Markdown в HTML
             output = convertMarkdownToHtml(decodedText);
+            document.getElementById("content").innerHTML = output;
 
             // Рендеринг формул с помощью KaTeX
             renderMathInElement(document.getElementById("content"), {
                 delimiters: [
-                    {left: "\\(", right: "\\)", display: false},
-                    {left: "\\[", right: "\\]", display: true}
-                ]
+                    { left: "\\(", right: "\\)", display: false },
+                    { left: "\\[", right: "\\]", display: true }
+                ],
+                throwOnError: false // Не выбрасывать ошибку, если не удаётся обработать формулу
             });
 
             // Запуск подсветки кода
