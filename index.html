@@ -21,16 +21,42 @@
     </style>
 </head>
 <body>
-    <div id="content">{{ text | safe }}</div>
+    <h1>Отображение текста</h1>
+    <div id="content"></div>
+
     <script>
-        document.getElementById("content").innerHTML = 
-            document.getElementById("content").innerHTML
-            .replace(/```([^`]+)```/g, '<pre><code>$1</code></pre>')
-            .replace(/\$\$(.+?)\$\$/g, '\\[$1\\]')
-            .replace(/\$(.+?)\$/g, '\\($1\\)');
-        
-        document.querySelectorAll('pre code').forEach((el) => hljs.highlightElement(el));
-        MathJax.typesetPromise();
+        // Функция для получения параметров URL
+        function getUrlParameter(name) {
+            name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+            var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+            var results = regex.exec(location.search);
+            return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+        }
+
+        // Получение текста из параметра URL
+        const text = getUrlParameter('text');
+
+        // Обработка и вывод текста
+        if (text) {
+            const formattedText = convertMarkdownToHtml(text);
+            document.getElementById("content").innerHTML = formattedText;
+
+            // Запустить MathJax для рендеринга математических формул
+            MathJax.typesetPromise();
+        } else {
+            document.getElementById("content").innerHTML = "Нет текста для отображения.";
+        }
+
+        // Простой метод для преобразования Markdown в HTML
+        function convertMarkdownToHtml(markdownText) {
+            return markdownText
+                .replace(/```([^`]+)```/g, '<pre><code>$1</code></pre>')
+                .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.+?)\*/g, '<em>$1</em>')
+                .replace(/__(.+?)__/g, '<strong>$1</strong>')
+                .replace(/_(.+?)_/g, '<em>$1</em>')
+                .replace(/\n/g, '<br>'); // Перевод строки
+        }
     </script>
 </body>
 </html>
