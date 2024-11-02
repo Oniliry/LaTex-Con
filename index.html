@@ -4,10 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Форматированный текст</title>
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/styles/default.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/highlight.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.15.2/katex.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.15.2/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.15.2/contrib/auto-render.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -36,17 +37,6 @@
         // Получение текста из параметра URL
         const text = getUrlParameter('text');
 
-        // Обработка и вывод текста
-        if (text) {
-            const formattedText = convertMarkdownToHtml(text);
-            document.getElementById("content").innerHTML = formattedText;
-
-            // Запустить MathJax для рендеринга математических формул
-            MathJax.typesetPromise();
-        } else {
-            document.getElementById("content").innerHTML = "Нет текста для отображения.";
-        }
-
         // Простой метод для преобразования Markdown в HTML
         function convertMarkdownToHtml(markdownText) {
             return markdownText
@@ -56,6 +46,22 @@
                 .replace(/__(.+?)__/g, '<strong>$1</strong>')
                 .replace(/_(.+?)_/g, '<em>$1</em>')
                 .replace(/\n/g, '<br>'); // Перевод строки
+        }
+
+        // Обработка и вывод текста
+        if (text) {
+            const formattedText = convertMarkdownToHtml(text);
+            document.getElementById("content").innerHTML = formattedText;
+
+            // Рендеринг математических формул с помощью KaTeX
+            renderMathInElement(document.getElementById("content"), {
+                delimiters: [
+                    {left: "\\(", right: "\\)", display: false},
+                    {left: "\\[", right: "\\]", display: true}
+                ]
+            });
+        } else {
+            document.getElementById("content").innerHTML = "Нет текста для отображения.";
         }
     </script>
 </body>
