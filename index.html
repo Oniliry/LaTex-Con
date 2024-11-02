@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Форматированный текст</title>
+    <title>Декодирование текста из URL</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.15.2/katex.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/styles/default.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.15.2/katex.min.js"></script>
@@ -35,7 +35,7 @@
     </style>
 </head>
 <body>
-    <h1>Отображение текста</h1>
+    <h1>Декодирование текста</h1>
     <div id="content"></div>
 
     <script>
@@ -47,8 +47,21 @@
             return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
         }
 
+        // Функция для декодирования Base64
+        function decodeBase64(encodedText) {
+            try {
+                // Декодирование Base64
+                const decodedText = atob(encodedText);
+                // Преобразуем в текст в UTF-8
+                return decodeURIComponent(escape(decodedText));
+            } catch (e) {
+                console.error('Ошибка декодирования:', e);
+                return 'Ошибка декодирования Base64.';
+            }
+        }
+
         // Получение текста из параметра URL и декодирование
-        const text = getUrlParameter('text');
+        const encodedText = getUrlParameter('text');
 
         // Простой метод для преобразования Markdown в HTML
         function convertMarkdownToHtml(markdownText) {
@@ -80,8 +93,9 @@
         }
 
         // Обработка и вывод текста
-        if (text) {
-            const formattedText = convertMarkdownToHtml(text);
+        if (encodedText) {
+            const decodedText = decodeBase64(encodedText);
+            const formattedText = convertMarkdownToHtml(decodedText);
             document.getElementById("content").innerHTML = formattedText;
 
             // Рендеринг формул с помощью KaTeX
