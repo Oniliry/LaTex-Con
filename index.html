@@ -146,8 +146,8 @@
                     return `<pre><code class="language-js">${codeBlocks[index].replace('<br>', /\n/g)}</code></pre>`;
                 })
                 .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                .replace(/`(.*?)`/g, '<em>$1</em>')
-                .replace(/\*(.*?)\*/g, '<em>$1</em>');
+                .replace(/`([^\n]*?)`/g, '<em>$1</em>')
+                .replace(/\*(?!\s)([^\n]*?)\*(?!\s)/g, '<em>$1</em>');
 
             htmlText = htmlText.replace(/(<li>.*?<\/li>)/g, '<ul>$1</ul>');
             outputDiv.innerHTML = htmlText;
