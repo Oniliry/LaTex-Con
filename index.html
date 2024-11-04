@@ -145,6 +145,8 @@
                 .replace(/{{codeBlock(\d+)}}/g, (match, index) => {
                     return `<pre><code class="language-js">${codeBlocks[index].replace('<br>', /\n/g)}</code></pre>`;
                 })
+                .replace(/\$\$(.*?)\$\$/g, '<span class="latex-math">\\[$1\\]</span>')  // Обработка $$ $$
+                .replace(/\$(.*?)\$/g, '<span class="latex-math">\\($1\\)</span>')
                 .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
                 .replace(/`([^\n]*?)`/g, '<em>$1</em>')
                 .replace(/\*(?!\s)([^\n]*?)\*(?!\s)/g, '<em>$1</em>');
