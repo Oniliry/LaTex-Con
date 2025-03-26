@@ -1,169 +1,176 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Конвертер LaTeX</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.23.0/themes/prism.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-okaidia.min.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: Montserrat, sans-serif;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background: linear-gradient(135deg, #007bff, #ff7e00, #6a0dad);
-            padding: 20px;
-        }
-        .output {
-            width: 100%;
-            max-width: 700px;
-            padding: 20px 10px;
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            text-align: left;
-            overflow-x: auto;
-            flex-grow: 1;
-        }
-        pre, code {
-            font-size: 10px !important;
-            line-height: 1.0;
-        }
-        pre {
-            background: #f5f5f5;
-            padding: 10px;
-            border-radius: 5px;
-            overflow: auto;
-            line-height: 1.0;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-        }
-        th, td {
-            background-color: #fff;
-            color: #000000;
-            padding: 10px;
-            border: 1px solid #ddd;
-            text-align: center;
-            vertical-align: middle;
-            font-weight: normal;
-        }
-        .button-close {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 12px 24px;
-            background-color: #4a90e2;
-            color: #fff;
-            text-decoration: none;
-            font-weight: bold;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        .button-close:hover {
-            background-color: #357ABD;
-        }
-    </style>
-    </style>
-    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.0.4/pako.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.23.0/prism.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Конвертер LaTeX</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.23.0/themes/prism.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-okaidia.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    /* Основной стиль */
+    body {
+      font-family: Montserrat, sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      /* Используем fill-available для корректного расчёта высоты на iOS */
+      height: -webkit-fill-available;
+      margin: 0;
+      background: linear-gradient(135deg, #007bff, #ff7e00, #6a0dad);
+      padding: 20px;
+    }
+    .output {
+      width: 100%;
+      max-width: 700px;
+      padding: 20px 10px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      text-align: left;
+      overflow-x: auto;
+      overflow-y: auto; /* Добавлена вертикальная прокрутка */
+      flex-grow: 1;
+      /* Оптимизация для iOS */
+      -webkit-overflow-scrolling: touch;
+      transform: translateZ(0);
+      backface-visibility: hidden;
+      will-change: transform;
+    }
+    pre, code {
+      font-size: 10px !important;
+      line-height: 1.0;
+    }
+    pre {
+      background: #f5f5f5;
+      padding: 10px;
+      border-radius: 5px;
+      overflow: auto;
+      line-height: 1.0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+    }
+    th, td {
+      background-color: #fff;
+      color: #000000;
+      padding: 10px;
+      border: 1px solid #ddd;
+      text-align: center;
+      vertical-align: middle;
+      font-weight: normal;
+    }
+    .button-close {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 12px 24px;
+      background-color: #4a90e2;
+      color: #fff;
+      text-decoration: none;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .button-close:hover {
+      background-color: #357ABD;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.0.4/pako.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.23.0/prism.min.js"></script>
 </head>
 <body>
-    <script src="https://telegram.org/js/telegram-web-app.js "></script>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-    <script>
-        let tg = window.Telegram.WebApp;
-    
-        tg.ready();
-    
-        function closeMiniApp() {
-            tg.close();
-        }
-    </script>
-    
-    <div class="output" id="outputText">
-        <!-- Результат обработки будет отображаться здесь -->
-    </div>
-    
-    <a href="javascript:void(0);" onclick="closeMiniApp();" class="button-close">Закрыть</a>
+  <script>
+    let tg = window.Telegram.WebApp;
+    tg.ready();
 
-    <script>
-        function decompressText(encodedText) {
-            try {
-                const compressedData = Uint8Array.from(atob(encodedText), c => c.charCodeAt(0));
-                return pako.inflate(compressedData, { to: 'string' });
-            } catch (e) {
-                console.error('Ошибка разжатия:', e);
-                return 'Ошибка разжатия текста.';
-            }
-        }
+    function closeMiniApp() {
+      tg.close();
+    }
+  </script>
 
-        function getUrlParameter(name) {
-            name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
-            var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
-            var results = regex.exec(location.search);
-            return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
-        }
+  <div class="output" id="outputText">
+    <!-- Результат обработки будет отображаться здесь -->
+  </div>
 
-        function convertLatex(latexText) {
-            const outputDiv = document.getElementById("outputText");
-            let htmlText = latexText;
+  <a href="javascript:void(0);" onclick="closeMiniApp();" class="button-close">Закрыть</a>
 
-            const codeBlocks = [];
-            htmlText = htmlText.replace(/```([\s\S]*?)```/g, (match, code) => {
-                const index = codeBlocks.length;
-                codeBlocks.push(code);
-                return `{{codeBlock${index}}}`;
-            });
+  <script>
+    function decompressText(encodedText) {
+      try {
+        const compressedData = Uint8Array.from(atob(encodedText), c => c.charCodeAt(0));
+        return pako.inflate(compressedData, { to: 'string' });
+      } catch (e) {
+        console.error('Ошибка разжатия:', e);
+        return 'Ошибка разжатия текста.';
+      }
+    }
 
-            // Обрабатываем заголовки ## и ###
-            htmlText = htmlText.replace(/^(#{2,3})\s*(.*?)\n/gm, (match, hashes, title) => {
-                const level = hashes.length; // уровень заголовка
-                return `<h${level}>${title.trim()}</h${level}>`;
-            });
+    function getUrlParameter(name) {
+      name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+      var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+      var results = regex.exec(location.search);
+      return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+    }
 
-            // Обрабатываем таблицы Markdown
-            htmlText = htmlText.replace(/(\|.*?\|)\n\|[-| ]+\|\n((\|.*?\|\n)+)/g, (match, header, body) => {
-                const headers = header.trim().split("|").filter(cell => cell.trim()).map(cell => `<th>${cell.trim()}</th>`).join("");
-                const rows = body.trim().split("\n").map(row => {
-                    const cells = row.trim().split("|").filter(cell => cell.trim()).map(cell => `<td>${cell.trim()}</td>`).join("");
-                    return `<tr>${cells}</tr>`;
-                }).join("");
-                return `<table><thead><tr>${headers}</tr></thead><tbody>${rows}</tbody></table>`;
-            });
+    function convertLatex(latexText) {
+      const outputDiv = document.getElementById("outputText");
+      let htmlText = latexText;
 
-            htmlText = htmlText
-                .replace(/(?<!{{codeBlock\d+}})\n(?!{{codeBlock\d+}})/g, '<br>')
-                .replace(/{{codeBlock(\d+)}}/g, (match, index) => {
-                    return `<pre><code class="language-js">${codeBlocks[index].replace('<br>', /\n/g)}</code></pre>`;
-                })
-                .replace(/\$\$(.*?)\$\$/g, '<span class="latex-math">\\[$1\\]</span>')  // Обработка $$ $$
-                .replace(/\$(.*?)\$/g, '<span class="latex-math">\\($1\\)</span>')
-                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                .replace(/`([^\n]*?)`/g, '<em>$1</em>')
-                .replace(/\*(?!\s)([^\n]*?)\*(?!\s)/g, '<em>$1</em>');
+      const codeBlocks = [];
+      htmlText = htmlText.replace(/```([\s\S]*?)```/g, (match, code) => {
+        const index = codeBlocks.length;
+        codeBlocks.push(code);
+        return `{{codeBlock${index}}}`;
+      });
 
-            htmlText = htmlText.replace(/(<li>.*?<\/li>)/g, '<ul>$1</ul>');
-            outputDiv.innerHTML = htmlText;
-            Prism.highlightAll();
-            MathJax.typesetPromise([outputDiv]);
-        }
+      // Обрабатываем заголовки ## и ###
+      htmlText = htmlText.replace(/^(#{2,3})\s*(.*?)\n/gm, (match, hashes, title) => {
+        const level = hashes.length; // уровень заголовка
+        return `<h${level}>${title.trim()}</h${level}>`;
+      });
 
-        window.onload = function() {
-            const encodedText = getUrlParameter('text');
-            if (encodedText) {
-                const decodedText = decompressText(encodedText);
-                convertLatex(decodedText);
-            }
-        };
-    </script>
+      // Обрабатываем таблицы Markdown
+      htmlText = htmlText.replace(/(\|.*?\|)\n\|[-| ]+\|\n((\|.*?\|\n)+)/g, (match, header, body) => {
+        const headers = header.trim().split("|").filter(cell => cell.trim()).map(cell => `<th>${cell.trim()}</th>`).join("");
+        const rows = body.trim().split("\n").map(row => {
+          const cells = row.trim().split("|").filter(cell => cell.trim()).map(cell => `<td>${cell.trim()}</td>`).join("");
+          return `<tr>${cells}</tr>`;
+        }).join("");
+        return `<table><thead><tr>${headers}</tr></thead><tbody>${rows}</tbody></table>`;
+      });
+
+      htmlText = htmlText
+        .replace(/(?<!{{codeBlock\d+}})\n(?!{{codeBlock\d+}})/g, '<br>')
+        .replace(/{{codeBlock(\d+)}}/g, (match, index) => {
+          return `<pre><code class="language-js">${codeBlocks[index].replace('<br>', /\n/g)}</code></pre>`;
+        })
+        .replace(/\$\$(.*?)\$\$/g, '<span class="latex-math">\\[$1\\]</span>')  // Обработка $$ $$
+        .replace(/\$(.*?)\$/g, '<span class="latex-math">\\($1\\)</span>')
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/`([^\n]*?)`/g, '<em>$1</em>')
+        .replace(/\*(?!\s)([^\n]*?)\*(?!\s)/g, '<em>$1</em>');
+
+      htmlText = htmlText.replace(/(<li>.*?<\/li>)/g, '<ul>$1</ul>');
+      outputDiv.innerHTML = htmlText;
+      Prism.highlightAll();
+      MathJax.typesetPromise([outputDiv]);
+    }
+
+    window.onload = function() {
+      const encodedText = getUrlParameter('text');
+      if (encodedText) {
+        const decodedText = decompressText(encodedText);
+        convertLatex(decodedText);
+      }
+    };
+  </script>
 </body>
 </html>
+
