@@ -8,7 +8,7 @@ html, body {
 
 /* Фон с изображением */
 body {
-  background: url("image/background.png") no-repeat center center fixed;
+  background: url("background.png") no-repeat center center fixed;
   background-size: cover;
   color: white;
   overflow: hidden;
