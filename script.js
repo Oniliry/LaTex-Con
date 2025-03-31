@@ -1,96 +1,110 @@
+// Таблица планет с бустами
+const planetBoosts = {
+  "moon": 1.05,      // +5%
+  "mercury": 1.10,   // +10%
+  "pluto": 1.15,     // +15%
+  "uranus": 1.20,    // +20%
+  "mars": 1.25,      // +25%
+  "jupiter": 1.30,   // +30%
+  "saturn": 1.35,    // +35%
+  "earth": 1.40      // +40%
+};
+
 // Извлечение параметров из URL
 const params = new URLSearchParams(window.location.search);
+
+let energy = Number(params.get('energy')) || 10;
 let currentStars = Number(params.get('currentStars')) || 0;
-const starsPerClick = Number(params.get('starsPerClick')) || 1;
-let energy = Number(params.get('initialEnergy')) || 10;
+let totalClicks = Number(params.get('clicks')) || 0;
+const planet = params.get('planet') || "stars"; // Если нет, то stars.png
+const baseStarsPerClick = 0.001;
+
+// Определяем множитель буста
+const boostMultiplier = planetBoosts[planet] || 1.0;
+
+// Обновляем `starsPerClick` по бусту
+let starsPerClick = baseStarsPerClick * boostMultiplier;
+
 const maxEnergy = energy;
 
-let clickCount = 0;
-
 const star = document.getElementById("star");
-const clickCountDisplay = document.getElementById("clickCount");
+const totalClicksDisplay = document.getElementById("totalClicks");
 const currentStarsDisplay = document.getElementById("currentStars");
-const energyDisplay = document.getElementById("energy");
+const energyValueDisplay = document.getElementById("energyValue");
+const energyBar = document.getElementById("energyBar");
 const message = document.getElementById("message");
 const closeBtn = document.getElementById("closeBtn");
 
-// Установка начальных значений
-clickCountDisplay.textContent = clickCount;
-currentStarsDisplay.textContent = currentStars;
-energyDisplay.style.width = `${(energy / maxEnergy) * 100}%`;
+// Установка значений из параметров
+totalClicksDisplay.textContent = totalClicks;
+currentStarsDisplay.textContent = currentStars.toFixed(4); // Округляем до 3 знаков
+energyValueDisplay.textContent = energy;
+energyBar.style.width = `${(energy / maxEnergy) * 100}%`;
 
-// Обработчик клика по звезде
+// Устанавливаем изображение планеты
+star.src = `image/${planet}.png`;
+
+// Обработчик клика
 star.addEventListener("click", (event) => {
   if (energy > 0) {
-    clickCount++;
+    totalClicks++;
     energy--;
-    clickCountDisplay.textContent = clickCount;
+    totalClicksDisplay.textContent = totalClicks;
 
-    // Начисление звезд за клик
+    // Увеличиваем звёзды на `starsPerClick` (с учётом буста)
     currentStars += starsPerClick;
-    currentStarsDisplay.textContent = currentStars;
-    
-    // Обновление шкалы энергии
-    energyDisplay.style.width = `${(energy / maxEnergy) * 100}%`;
+    currentStarsDisplay.textContent = currentStars.toFixed(4);
 
-    // Визуальный эффект на звезде
-    star.classList.add("glow");
-    setTimeout(() => star.classList.remove("glow"), 500);
+    energyBar.style.width = `${(energy / maxEnergy) * 100}%`;
+    energyValueDisplay.textContent = energy;
 
-    // Вылетающий текст "+1" в точке клика
-    createFloatingText(event.clientX, event.clientY);
+    // Показываем всплывающий текст с правильным значением
+    createFloatingText(event.clientX, event.clientY, starsPerClick);
   } else {
-    message.textContent = "⚠️ Энергия закончилась! Подожди...";
+    message.textContent = "⚠️ Энергия закончилась!";
   }
 });
 
-// Функция появления вылетающего "+1"
-function createFloatingText(x, y) {
+// Функция появления анимации "+0.001" или больше
+function createFloatingText(x, y, value) {
   const text = document.createElement("div");
   text.classList.add("floating-text");
-  text.textContent = "+1";
+
+  // Округляем до 3 знаков
+  text.textContent = `+${value.toFixed(4)}`;
+
   document.body.appendChild(text);
   text.style.left = `${x}px`;
   text.style.top = `${y}px`;
 
-  setTimeout(() => {
-    text.remove();
-  }, 1000);
+  setTimeout(() => text.remove(), 1000);
 }
 
-// Восстановление энергии каждые 5 секунд
-setInterval(() => {
-  if (energy < maxEnergy) {
-    energy++;
-    energyDisplay.style.width = `${(energy / maxEnergy) * 100}%`;
-    message.textContent = "";
-  }
-}, 5000);
-
-let tg = window.Telegram.WebApp
-
+// Функция отправки данных в Telegram
 function sendDataToTelegram() {
   const data = {
-    clicks: clickCount,
-    stars: currentStars
+    stars: currentStars.toFixed(3),
+    energy: energy,
+    clicks: totalClicks
   };
-  if (tg) {
-    console.log(tg)
-    tg.sendData(JSON.stringify(data));
+
+  if (window.Telegram.WebApp) {
+    window.Telegram.WebApp.sendData(JSON.stringify(data));
   } else {
     console.log("Telegram WebApp API не доступен. Данные:", data);
   }
 }
 
+// Закрытие и отправка данных
 closeBtn.addEventListener("click", () => {
   sendDataToTelegram();
-  if (tg) {
-    tg.close();
+  if (window.Telegram.WebApp) {
+    window.Telegram.WebApp.close();
   } else {
     console.log("Закрытие мини-приложения недоступно.");
   }
 });
 
-// При закрытии окна (например, через системное закрытие) отправляем данные
+// Отправка данных перед выходом
 window.addEventListener("beforeunload", sendDataToTelegram);
 
