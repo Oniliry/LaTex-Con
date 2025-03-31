@@ -6,7 +6,6 @@ let energy = Number(params.get('initialEnergy')) || 10;
 const maxEnergy = energy;
 
 let clickCount = 0;
-let tg = window.Telegram.WebApp;
 
 const star = document.getElementById("star");
 const clickCountDisplay = document.getElementById("clickCount");
@@ -68,21 +67,30 @@ setInterval(() => {
   }
 }, 5000);
 
-// Функция отправки данных через Telegram WebApp API
+let tg = window.Telegram.WebApp
+
 function sendDataToTelegram() {
   const data = {
     clicks: clickCount,
     stars: currentStars
   };
-  // Отправляем данные через Telegram WebApp API
-  tg.sendData(JSON.stringify(data));
+  if (tg) {
+    console.log(tg)
+    tg.sendData(JSON.stringify(data));
+  } else {
+    console.log("Telegram WebApp API не доступен. Данные:", data);
+  }
 }
 
-// Кнопка "Закрыть" отправляет данные и закрывает веб-приложение
 closeBtn.addEventListener("click", () => {
   sendDataToTelegram();
-  tg.close();
+  if (tg) {
+    tg.close();
+  } else {
+    console.log("Закрытие мини-приложения недоступно.");
+  }
 });
 
 // При закрытии окна (например, через системное закрытие) отправляем данные
 window.addEventListener("beforeunload", sendDataToTelegram);
+
