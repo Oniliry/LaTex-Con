@@ -2,32 +2,41 @@
 
 html, body {
   height: 100%;
+  width: 100%;
   margin: 0;
   font-family: 'Press Start 2P', cursive;
+  overflow: hidden; /* Не позволяет скроллить */
 }
 
 /* Фон с изображением */
 body {
-  background: url("background.png") no-repeat center center fixed;
+  background: url("image/background.png") no-repeat center center fixed;
   background-size: cover;
   color: white;
-  overflow: hidden;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-/* Центрированный блок */
+/* Центрированный контейнер, адаптируется под размер экрана */
 .container {
-  text-align: center;
-  background: rgba(0, 0, 0, 0.4);
+  width: 100vw;
+  height: 100vh;
+  max-width: 600px; /* Можно регулировать максимальную ширину */
   padding: 20px;
+  background: rgba(0, 0, 0, 0.4);
   border-radius: 10px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
 }
 
 /* Энергия - шкала */
 .energy-bar {
-  width: 300px;
+  width: 80%;
   height: 20px;
   background: rgba(255, 255, 255, 0.2);
   border-radius: 10px;
@@ -42,14 +51,15 @@ body {
   transition: width 0.3s ease-in-out;
 }
 
-/* Звезда (увеличена примерно в 3 раза) */
+/* Планета/Звезда */
 .star-container {
   position: relative;
   margin: 20px auto;
 }
 
 .star {
-  width: 450px;
+  width: 80%;
+  max-width: 450px;
   cursor: pointer;
   transition: transform 0.2s ease-in-out;
 }
@@ -75,19 +85,18 @@ body {
 
 /* Кнопка закрыть */
 #closeBtn {
-    background: red;
-    color: white;
-    font-size: 16px;
-    font-family: 'Press Start 2P', cursive;
-    border: none;
-    padding: 10px 20px;
-    cursor: pointer;
-    margin-top: 20px;
-    border-radius: 15px;
-    transition: background 0.3s ease-in-out;
-  }
-  
-#closeBtn:hover {
-background: darkred;
+  background: red;
+  color: white;
+  font-size: 16px;
+  font-family: 'Press Start 2P', cursive;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  margin-top: 20px;
+  border-radius: 15px;
+  transition: background 0.3s ease-in-out;
 }
 
+#closeBtn:hover {
+  background: darkred;
+}
