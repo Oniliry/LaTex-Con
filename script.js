@@ -6,6 +6,7 @@ let energy = Number(params.get('initialEnergy')) || 10;
 const maxEnergy = energy;
 
 let clickCount = 0;
+let tg = window.Telegram.WebApp;
 
 const star = document.getElementById("star");
 const clickCountDisplay = document.getElementById("clickCount");
@@ -74,13 +75,13 @@ function sendDataToTelegram() {
     stars: currentStars
   };
   // Отправляем данные через Telegram WebApp API
-  Telegram.WebApp.sendData(JSON.stringify(data));
+  tg.sendData(JSON.stringify(data));
 }
 
 // Кнопка "Закрыть" отправляет данные и закрывает веб-приложение
 closeBtn.addEventListener("click", () => {
   sendDataToTelegram();
-  Telegram.WebApp.close();
+  tg.close();
 });
 
 // При закрытии окна (например, через системное закрытие) отправляем данные
