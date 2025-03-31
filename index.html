@@ -5,31 +5,29 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Звездный кликер</title>
   <link rel="stylesheet" href="styles.css">
-  <!-- Telegram WebApp API -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
   <div class="container">
-    <h1>🚀 Звездный Кликер</h1>
-    <p>✨ Клики: <span id="clickCount">0</span></p>
+    <h1>🚀 Звездный кликер</h1>
+    <p>✨ Всего кликов: <span id="totalClicks">0</span></p>
     <p>🌟 Текущее количество звезд: <span id="currentStars">0</span></p>
+    <p>⚡ Энергия: <span id="energyValue">0</span></p>
 
-    <!-- Шкала энергии -->
     <div class="energy-bar">
-      <div id="energy" class="energy-fill"></div>
+      <div id="energyBar" class="energy-fill"></div>
     </div>
 
-    <!-- Звезда -->
     <div class="star-container">
-      <img src="stars.png" alt="Звезда" id="star" class="star">
+      <img src="image/moon.png" alt="Планета" id="star" class="star">
     </div>
     
     <p id="message"></p>
     
-    <!-- Кнопка закрыть -->
     <button id="closeBtn">❌ Закрыть</button>
   </div>
 
   <script src="script.js"></script>
 </body>
 </html>
+
