@@ -1,6 +1,6 @@
 // Инициализация параметров и переменных из URL
 const params = new URLSearchParams(window.location.search);
-let energy = Number(params.get('energy')) || 10;
+let energy = Number(params.get('energy')) || 0;
 let currentStars = Number(params.get('currentStars')) || 0;
 let totalClicks = Number(params.get('clicks')) || 0;
 const planet = params.get('planet') || "moon";
@@ -38,6 +38,12 @@ currentStarsDisplay.textContent = currentStars.toFixed(4);
 energyValueDisplay.textContent = energy;
 energyBar.style.width = `${(energy / maxEnergy) * 100}%`;
 star.src = `image/${planet}.png`;
+
+document.addEventListener("DOMContentLoaded", () => {
+  if (window.Telegram?.WebApp) {
+    window.Telegram.WebApp.expand();
+  }
+});
 
 //Обработка кликов по планете
 let lastClickTime = 0;
