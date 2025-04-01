@@ -1,32 +1,28 @@
-// Таблица планет с бустами
-const planetBoosts = {
-  "moon": 1.05,      // +5%
-  "mercury": 1.10,   // +10%
-  "pluto": 1.15,     // +15%
-  "uranus": 1.20,    // +20%
-  "mars": 1.25,      // +25%
-  "jupiter": 1.30,   // +30%
-  "saturn": 1.35,    // +35%
-  "earth": 1.40      // +40%
-};
-
-// Извлечение параметров из URL
+// Инициализация параметров и переменных из URL
 const params = new URLSearchParams(window.location.search);
-
 let energy = Number(params.get('energy')) || 10;
 let currentStars = Number(params.get('currentStars')) || 0;
 let totalClicks = Number(params.get('clicks')) || 0;
-const planet = params.get('planet') || "stars"; // Если нет, то stars.png
+const planet = params.get('planet') || "moon";
 const baseStarsPerClick = 0.001;
 
-// Определяем множитель буста
+// Бусты для различных планет
+const planetBoosts = {
+  "moon": 1.05,
+  "mercury": 1.10,
+  "pluto": 1.15,
+  "uranus": 1.20,
+  "mars": 1.25,
+  "jupiter": 1.30,
+  "saturn": 1.35,
+  "earth": 1.40
+};
+
 const boostMultiplier = planetBoosts[planet] || 1.0;
-
-// Обновляем `starsPerClick` по бусту
 let starsPerClick = baseStarsPerClick * boostMultiplier;
-
 const maxEnergy = energy;
 
+//Получение элементов DOM
 const star = document.getElementById("star");
 const totalClicksDisplay = document.getElementById("totalClicks");
 const currentStarsDisplay = document.getElementById("currentStars");
@@ -34,77 +30,225 @@ const energyValueDisplay = document.getElementById("energyValue");
 const energyBar = document.getElementById("energyBar");
 const message = document.getElementById("message");
 const closeBtn = document.getElementById("closeBtn");
+const container = document.querySelector(".container");
 
-// Установка значений из параметров
+// Инициализация отображаемых значений
 totalClicksDisplay.textContent = totalClicks;
-currentStarsDisplay.textContent = currentStars.toFixed(4); // Округляем до 3 знаков
+currentStarsDisplay.textContent = currentStars.toFixed(4);
 energyValueDisplay.textContent = energy;
 energyBar.style.width = `${(energy / maxEnergy) * 100}%`;
-
-// Устанавливаем изображение планеты
 star.src = `image/${planet}.png`;
 
-// Обработчик клика
+//Обработка кликов по планете
+let lastClickTime = 0;
 star.addEventListener("click", (event) => {
-  if (energy > 0) {
-    totalClicks++;
-    energy--;
-    totalClicksDisplay.textContent = totalClicks;
+  event.preventDefault();
+  const now = Date.now();
+  if (now - lastClickTime < 200 || energy <= 0) return;
+  lastClickTime = now;
 
-    // Увеличиваем звёзды на `starsPerClick` (с учётом буста)
-    currentStars += starsPerClick;
-    currentStarsDisplay.textContent = currentStars.toFixed(4);
+  totalClicks++;
+  energy--;
+  currentStars += starsPerClick;
 
-    energyBar.style.width = `${(energy / maxEnergy) * 100}%`;
-    energyValueDisplay.textContent = energy;
+  // Обновление UI
+  totalClicksDisplay.textContent = totalClicks;
+  currentStarsDisplay.textContent = currentStars.toFixed(4);
+  energyValueDisplay.textContent = energy;
+  energyBar.style.width = `${(energy / maxEnergy) * 100}%`;
 
-    // Показываем всплывающий текст с правильным значением
-    createFloatingText(event.clientX, event.clientY, starsPerClick);
-  } else {
-    message.textContent = "⚠️ Энергия закончилась!";
-  }
+  // Создание всплывающего текста с приростом звёзд
+  createFloatingText(event.clientX, event.clientY, starsPerClick);
 });
 
-// Функция появления анимации "+0.001" или больше
+//Создает всплывающий текст, отображающий прирост звёзд
 function createFloatingText(x, y, value) {
   const text = document.createElement("div");
   text.classList.add("floating-text");
-
-  // Округляем до 3 знаков
   text.textContent = `+${value.toFixed(4)}`;
-
   document.body.appendChild(text);
-  text.style.left = `${x}px`;
-  text.style.top = `${y}px`;
+
+  text.style.position = "absolute";
+  text.style.pointerEvents = "none";
+
+  const maxX = window.innerWidth - text.offsetWidth - 10;
+  const maxY = window.innerHeight - text.offsetHeight - 10;
+
+  text.style.left = `${Math.min(x, maxX)}px`;
+  text.style.top = `${Math.min(y, maxY)}px`;
 
   setTimeout(() => text.remove(), 1000);
 }
 
-// Функция отправки данных в Telegram
+//Логика работы комет
+let cometActive = false;    // Флаг, указывающий на активность кометы
+let cometClicks = 0;        // Счетчик кликов по комете
+let cometInterval = null;   // Интервал анимации кометы
+
+//Создает и запускает анимацию кометы
+function spawnComet() {
+  if (cometActive) return; // Если комета уже активна, не создавать новую
+
+  cometActive = true;
+  cometClicks = 0;
+
+  // Создаем элемент кометы и задаем начальные стили
+  const comet = document.createElement("div");
+  comet.classList.add("comet");
+
+  // Определяем стартовую позицию кометы (слева или справа от контейнера)
+  const containerRect = container.getBoundingClientRect();
+  const fromLeft = Math.random() < 0.5;
+  const startX = fromLeft ? -60 : containerRect.width + 60;
+  const startY = Math.random() * containerRect.height * 0.8;
+  comet.style.left = `${startX}px`;
+  comet.style.top = `${startY}px`;
+
+  container.appendChild(comet);
+
+  // Вычисляем целевые координаты – центр планеты
+  const starRect = star.getBoundingClientRect();
+  const containerOffset = container.getBoundingClientRect();
+  const targetX = starRect.left - containerOffset.left + starRect.width / 2;
+  const targetY = starRect.top - containerOffset.top + starRect.height / 2;
+
+  // Текущие координаты кометы
+  let currentX = startX;
+  let currentY = startY;
+
+  // Вычисляем вектор движения кометы
+  const dx = targetX - startX;
+  const dy = targetY - startY;
+  const distance = Math.hypot(dx, dy);
+  // Случайная скорость (в пикселях за миллисекунду)
+  const speed = Math.random() * (0.03 - 0.01) + 0.01;
+  const stepX = dx / distance * speed;
+  const stepY = dy / distance * speed;
+
+  // Запускаем анимацию перемещения кометы (примерно 60 кадров в секунду)
+  cometInterval = setInterval(() => {
+    currentX += stepX * 16;
+    currentY += stepY * 16;
+    comet.style.left = `${currentX}px`;
+    comet.style.top = `${currentY}px`;
+
+    // Проверяем, достигла ли комета области планеты
+    const cometRect = comet.getBoundingClientRect();
+    if (isColliding(cometRect, star.getBoundingClientRect())) {
+      // Если комета не была уничтожена кликами, запускаем анимацию столкновения
+      if (cometClicks < 10) {
+        triggerExplosion(cometRect);
+      }
+      removeComet(comet);
+    }
+  }, 16);
+
+  // Обработчик кликов по комете: при достижении 10 кликов комета уничтожается
+  comet.addEventListener("click", () => {
+    cometClicks++;
+    triggerCometClickExplosion(comet.getBoundingClientRect());
+    if (cometClicks >= 10) {
+      removeComet(comet);
+    }
+  });
+}
+
+//Удаляет комету и выполняет завершающие действия
+function removeComet(comet) {
+  if (cometClicks >= 10) {
+    // Начисляем бонус энергии: 5% от максимальной энергии
+    const energyGain = Math.floor(maxEnergy * 0.05);
+    energy = Math.min(maxEnergy, energy + energyGain);
+    energyValueDisplay.textContent = energy;
+    energyBar.style.width = `${(energy / maxEnergy) * 100}%`;
+    message.textContent = "Комета уничтожена! +5% энергии!";
+  }
+  cometActive = false;
+  clearInterval(cometInterval);
+  if (comet.parentNode) {
+    comet.parentNode.removeChild(comet);
+  }
+  setTimeout(() => { message.textContent = ""; }, 3000);
+}
+
+// Проверяет, пересекаются ли два прямоугольника
+function isColliding(rect1, rect2) {
+  return !(
+    rect1.right < rect2.left ||
+    rect1.left > rect2.right ||
+    rect1.bottom < rect2.top ||
+    rect1.top > rect2.bottom
+  );
+}
+
+// Запускает анимацию взрыва при столкновении кометы с планетой
+function triggerExplosion(rect) {
+  const explosion = document.createElement("div");
+  explosion.classList.add("explosion");
+  const containerRect = container.getBoundingClientRect();
+  explosion.style.left = `${rect.left - containerRect.left - 20}px`;
+  explosion.style.top = `${rect.top - containerRect.top - 20}px`;
+  container.appendChild(explosion);
+
+  // Дополнительно списываем случайное количество звезд (от 0.3% до 5%)
+  const penaltyPercentage = Math.random() * (5 - 0.3) + 0.3;
+  const penalty = currentStars * (penaltyPercentage / 100);
+  currentStars = Math.max(0, currentStars - penalty);
+  currentStarsDisplay.textContent = currentStars.toFixed(4);
+  message.innerHTML = `Комета достигла планеты! \n\n-${penalty.toFixed(4)} звезд.`;
+
+  setTimeout(() => explosion.remove(), 600);
+}
+
+// Запускает анимацию взрыва при клике на комету
+function triggerCometClickExplosion(rect) {
+  const explosion = document.createElement("div");
+  explosion.classList.add("comet-click-explosion");
+  const containerRect = container.getBoundingClientRect();
+  explosion.style.left = `${rect.left - containerRect.left - 10}px`;
+  explosion.style.top = `${rect.top - containerRect.top - 10}px`;
+  container.appendChild(explosion);
+  setTimeout(() => explosion.remove(), 500);
+}
+
+// Планирует появление кометы через случайные интервалы (от 1 до 10 секунд)
+function scheduleComet() {
+  const randomInterval = Math.random() * (10000 - 3000) + 1000;
+  setTimeout(() => {
+    spawnComet();
+    scheduleComet();
+  }, randomInterval);
+}
+scheduleComet();
+
+// Отправка данных в Telegram при закрытии приложения
 function sendDataToTelegram() {
   const data = {
     stars: currentStars.toFixed(3),
     energy: energy,
     clicks: totalClicks
   };
-
-  if (window.Telegram.WebApp) {
+  if (window.Telegram?.WebApp) {
     window.Telegram.WebApp.sendData(JSON.stringify(data));
   } else {
     console.log("Telegram WebApp API не доступен. Данные:", data);
   }
 }
 
-// Закрытие и отправка данных
+// Обработчик кнопки "Закрыть"
 closeBtn.addEventListener("click", () => {
   sendDataToTelegram();
-  if (window.Telegram.WebApp) {
+  if (window.Telegram?.WebApp) {
     window.Telegram.WebApp.close();
   } else {
     console.log("Закрытие мини-приложения недоступно.");
   }
 });
 
-// Отправка данных перед выходом
+// Отправка данных при попытке закрытия страницы
 window.addEventListener("beforeunload", sendDataToTelegram);
 
+// Предотвращение скроллинга на мобильных устройствах
+document.addEventListener('touchmove', (event) => {
+  event.preventDefault();
+}, { passive: false });
