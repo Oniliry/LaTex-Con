@@ -9,25 +9,41 @@
 </head>
 <body>
   <div class="container">
-    <h1>🚀 Звездный кликер</h1>
-    <p>✨ Всего кликов: <span id="totalClicks">0</span></p>
-    <p>🌟 Текущее количество звезд: <span id="currentStars">0</span></p>
-    <p>⚡ Энергия: <span id="energyValue">0</span></p>
-
-    <div class="energy-bar">
-      <div id="energyBar" class="energy-fill"></div>
+    <!-- Верхняя секция: заголовок, статистика и шкала энергии -->
+    <div class="header">
+      <h1>🚀 Звездный кликер</h1>
+      <p>✨ Всего кликов: <span id="totalClicks">0</span></p>
+      <p>🌟 Ваши звезды: <span id="currentStars">0</span></p>
+      <p>⚡ Энергия: <span id="energyValue">0</span></p>
+      <div class="energy-bar">
+        <div id="energyBar" class="energy-fill"></div>
+      </div>
     </div>
 
-    <div class="star-container">
-      <img src="image/moon.png" alt="Планета" id="star" class="star">
+    <!-- Секция с планетой -->
+    <div class="planet-section">
+      <div class="star-container">
+        <img src="image/moon.png" alt="Планета" id="star" class="star">
+      </div>
     </div>
-    
-    <p id="message"></p>
-    
-    <button id="closeBtn">❌ Закрыть</button>
+
+    <!-- Секция сообщения -->
+    <div class="message-section">
+      <p id="message"></p>
+    </div>
+
+    <!-- Секция кнопки -->
+    <div class="button-section">
+      <button id="closeBtn">Закрыть</button>
+    </div>
   </div>
 
   <script src="script.js"></script>
+  <script>
+    // Предотвращение скроллинга при touchmove (для мобильных)
+    document.addEventListener('touchmove', function(event) {
+      event.preventDefault();
+    }, { passive: false });
+  </script>
 </body>
 </html>
-
