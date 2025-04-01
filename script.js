@@ -137,7 +137,7 @@ function spawnComet() {
     currentY += stepY * 16;
     comet.style.left = `${currentX}px`;
     comet.style.top = `${currentY}px`;
-
+    message.textContent = "Уничтожь комету!";
     // Проверяем, достигла ли комета области планеты
     const cometRect = comet.getBoundingClientRect();
     if (isColliding(cometRect, star.getBoundingClientRect())) {
@@ -219,7 +219,7 @@ function triggerCometClickExplosion(rect) {
 
 // Планирует появление кометы через случайные интервалы (от 1 до 10 секунд)
 function scheduleComet() {
-  const randomInterval = Math.random() * (10000 - 3000) + 1000;
+  const randomInterval = Math.random() * (30000 - 10000) + 10000;
   setTimeout(() => {
     spawnComet();
     scheduleComet();
