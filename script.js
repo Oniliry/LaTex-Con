@@ -3,11 +3,12 @@ const params = new URLSearchParams(window.location.search);
 let energy = Number(params.get('energy')) || 0;
 let currentStars = Number(params.get('currentStars')) || 0;
 let totalClicks = Number(params.get('clicks')) || 0;
-const planet = params.get('planet') || "moon";
+let planet = params.get('planet') || "stars";
 const baseStarsPerClick = 0.001;
 
 // Бусты для различных планет
 const planetBoosts = {
+  "stars": 1.00,
   "moon": 1.05,
   "mercury": 1.10,
   "pluto": 1.15,
@@ -18,11 +19,43 @@ const planetBoosts = {
   "earth": 1.40
 };
 
-const boostMultiplier = planetBoosts[planet] || 1.0;
-let starsPerClick = baseStarsPerClick * boostMultiplier;
-const maxEnergy = energy;
+// Максимальные значения энергии для каждой планеты
+const maxEnergyPerPlanet = {
+  "stars": 250,
+  "moon": 260,
+  "mercury": 270,
+  "pluto": 280,
+  "uranus": 290,
+  "mars": 300,
+  "jupiter": 320,
+  "saturn": 330,
+  "earth": 350
+};
 
-//Получение элементов DOM
+// Получение множителя для текущей планеты
+let boostMultiplier = planetBoosts[planet] || 1.0;
+let starsPerClick = baseStarsPerClick * boostMultiplier;
+let maxEnergy = maxEnergyPerPlanet[planet] || 250; // Устанавливаем максимальную энергию для планеты
+
+// Список планет для последовательной смены
+const planets = ["stars", "moon", "mercury", "pluto", "uranus", "mars", "jupiter", "saturn", "earth"];
+
+// Порог для смены планеты
+function getNextPlanetThreshold() {
+  const currentIndex = planets.indexOf(planet);
+  const nextIndex = currentIndex + 1;
+
+  // Если планета последняя, возвращаем бесконечность (ничего менять не будет)
+  if (nextIndex >= planets.length) {
+    return Infinity;
+  }
+
+  const nextBoostMultiplier = planetBoosts[planets[nextIndex]];
+  const clicksForNextPlanet = 15000 + 15000 * ((boostMultiplier - 1) / 5) * 100;
+  return clicksForNextPlanet;
+}
+
+// Получение элементов DOM
 const star = document.getElementById("star");
 const totalClicksDisplay = document.getElementById("totalClicks");
 const currentStarsDisplay = document.getElementById("currentStars");
@@ -37,6 +70,7 @@ totalClicksDisplay.textContent = totalClicks;
 currentStarsDisplay.textContent = currentStars.toFixed(4);
 energyValueDisplay.textContent = energy;
 energyBar.style.width = `${(energy / maxEnergy) * 100}%`;
+energyBar.setAttribute('max', maxEnergy); // Устанавливаем максимальное значение для energyBar
 star.src = `image/${planet}.png`;
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -45,7 +79,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-//Обработка кликов по планете
+// Обработка кликов по планете
 let lastClickTime = 0;
 star.addEventListener("click", (event) => {
   event.preventDefault();
@@ -61,7 +95,27 @@ star.addEventListener("click", (event) => {
   totalClicksDisplay.textContent = totalClicks;
   currentStarsDisplay.textContent = currentStars.toFixed(4);
   energyValueDisplay.textContent = energy;
-  energyBar.style.width = `${(energy / maxEnergy) * 100}%`;
+  energyBar.style.width = `${(energy / maxEnergy) * 100}%`; // Обновляем ширину energyBar
+
+  // Проверяем, нужно ли сменить планету
+  if (totalClicks >= getNextPlanetThreshold()) {
+    const currentIndex = planets.indexOf(planet);
+    const nextIndex = currentIndex + 1;
+    
+    if (nextIndex < planets.length) {
+      planet = planets[nextIndex];
+      boostMultiplier = planetBoosts[planet];
+      starsPerClick = baseStarsPerClick * boostMultiplier;
+      maxEnergy = maxEnergyPerPlanet[planet]; // Обновляем максимальное значение энергии для новой планеты
+      energy = Math.min(energy, maxEnergy); // Ограничиваем энергию максимальным значением
+
+      // Обновление изображения планеты и UI
+      star.src = `image/${planet}.png`;
+      message.textContent = `Поздравляем! Теперь ваша планета: ${planet}.`;
+      energyBar.setAttribute('max', maxEnergy); // Обновляем max для energyBar
+      energyBar.style.width = `${(energy / maxEnergy) * 100}%`; // Обновляем ширину energyBar
+    }
+  }
 
   // Создание всплывающего текста с приростом звёзд
   createFloatingText(event.clientX, event.clientY, starsPerClick);
@@ -232,7 +286,8 @@ function sendDataToTelegram() {
   const data = {
     stars: currentStars.toFixed(3),
     energy: energy,
-    clicks: totalClicks
+    clicks: totalClicks,
+    planet: planet
   };
   if (window.Telegram?.WebApp) {
     window.Telegram.WebApp.sendData(JSON.stringify(data));
