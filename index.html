@@ -1,37 +1,51 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Привет</title>
-  <style>
-    /* Простое центрирование и приятный шрифт */
-    html,body { height:100%; margin:0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; }
-    .wrap {
-      height:100%;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      background: linear-gradient(135deg, #f7f9fc 0%, #e6eef8 100%);
-      color:#0b2545;
-      padding:20px;
-      box-sizing:border-box;
-    }
-    .card {
-      text-align:center;
-      padding:30px 40px;
-      border-radius:12px;
-      box-shadow: 0 6px 20px rgba(11,37,69,0.08);
-    }
-    h1 { margin:0; font-size: clamp(20px, 4vw, 36px); }
-  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Звездный кликер</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
-  <div class="wrap">
-    <div class="card">
-      <h1>@vfladick дурачек</h1>
+  <div class="container">
+    <!-- Верхняя секция: заголовок, статистика и шкала энергии -->
+    <div class="header">
+      <h1>🚀 Звездный кликер</h1>
+      <p>✨ Всего кликов: <span id="totalClicks">0</span></p>
+      <p>🌟 Ваши звезды: <span id="currentStars">0</span></p>
+      <p>⚡️ Энергия: <span id="energyValue">0</span></p>
+      <div class="energy-bar">
+        <div id="energyBar" class="energy-fill"></div>
+      </div>
+    </div>
+
+    <!-- Секция с планетой -->
+    <div class="planet-section">
+      <div class="star-container">
+        <img src="image/moon.png" alt="Планета" id="star" class="star">
+      </div>
+    </div>
+
+    <!-- Секция сообщения -->
+    <div class="message-section">
+      <p id="message"></p>
+    </div>
+
+    <!-- Секция кнопки -->
+    <div class="button-section">
+      <button id="closeBtn">Закрыть</button>
     </div>
   </div>
+
+  <script src="script.js"></script>
+  <script>
+    // Предотвращение скроллинга при touchmove (для мобильных)
+    document.addEventListener('touchmove', function(event) {
+      event.preventDefault();
+    }, { passive: false });
+  </script>
 </body>
 </html>
+
 
